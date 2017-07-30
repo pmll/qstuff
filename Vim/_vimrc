@@ -1,0 +1,98 @@
+" personal ".vimrc" file
+
+" Pathogen plugin
+execute pathogen#infect()
+
+set nocompatible
+
+" set case insensitive searching
+set ignorecase
+
+" turn off search highlighting with escape... can also use this with CR
+" nnoremap <CR> :noh<CR><CR>
+nnoremap <esc> :noh<return><esc>
+
+" set preferred colour scheme
+colorscheme paul
+
+" turn on line numbers
+set numberwidth=3	" this seems to get ignored...
+set relativenumber
+set number
+
+" preferred font
+if has('gui_running')
+	set guifont=Consolas:h11:cANSI
+endif
+
+" typo corrections
+iabbrev teh the
+iabbrev waht what
+
+" spelling
+set spelllang=en_gb
+
+" set comma as the global leader key
+let mapleader=','
+
+" edit and source vimrc
+nnoremap <leader>ev :split $MYVIMRC<cr>
+nnoremap <leader>sv :source $MYVIMRC<cr>
+
+" surround current word with single quotes
+nnoremap <leader>' diwi'<ESC>pa'
+
+" surround visual selected area with single quotes
+vnoremap <leader>' <ESC>`<i'<ESC>`>a'
+
+" not sure I want to retrain my fingers in this way, but let's give it a go
+inoremap jk <esc>
+
+"set cmdheight=2
+"call cuetip#enable()
+
+" this to try to tackle syntax highlighting problems
+" if it makes things too slow, perhaps map :syntax sync fromstart to an f key
+autocmd BufEnter * :syntax sync fromstart
+
+" test psysvol utilities path
+let b:psys_path = 'c:\\Users\\PMarshall\\Documents\\psysvol\\'
+" also for benefit of p-system use, use centralised location for backup and
+" swap files
+set backupdir=c:\vimtemp
+set directory=c:\vimtemp
+
+
+
+" all the stuff below was provided "out of the box"
+source $VIMRUNTIME/vimrc_example.vim
+source $VIMRUNTIME/mswin.vim
+behave mswin
+"set noshowmode	" not out of the box, don't show mode - so tips are visible
+let $HOME=$USERPROFILE
+
+set diffexpr=MyDiff()
+function! MyDiff()
+  let opt = '-a --binary '
+  if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif
+  if &diffopt =~ 'iwhite' | let opt = opt . '-b ' | endif
+  let arg1 = v:fname_in
+  if arg1 =~ ' ' | let arg1 = '"' . arg1 . '"' | endif
+  let arg2 = v:fname_new
+  if arg2 =~ ' ' | let arg2 = '"' . arg2 . '"' | endif
+  let arg3 = v:fname_out
+  if arg3 =~ ' ' | let arg3 = '"' . arg3 . '"' | endif
+  let eq = ''
+  if $VIMRUNTIME =~ ' '
+    if &sh =~ "\<cmd"
+      let cmd = '""' . $VIMRUNTIME . '\diff"'
+      let eq = '"'
+    else
+      let cmd = substitute($VIMRUNTIME, ' ', '" ', '') . '\diff"'
+    endif
+  else
+    let cmd = $VIMRUNTIME . '\diff'
+  endif
+  silent execute '!' . cmd . ' ' . opt . arg1 . ' ' . arg2 . ' > ' . arg3 . eq
+endfunction
+

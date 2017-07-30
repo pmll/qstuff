@@ -1,0 +1,47 @@
+#lang racket
+
+(define (display-usage)
+  (display "Usage: ")
+  (display (find-system-path 'run-file))
+  (display " <file>")
+  (newline))
+
+(define (integer->formatted-hex n width)  
+  (define (prepend-zeroes hex-str)
+    (let ((len (string-length hex-str)))
+      (if (>= len width)
+          hex-str
+          (string-append (make-string (- width len) #\0) hex-str))))
+  (prepend-zeroes (format "~x" n)))
+
+(define (display-bin in-port)
+  (define (display-address address)
+    (printf "~a : " (integer->formatted-hex address 7)))
+  (define (display-bytes-as-hex b)
+    (for-each (lambda (x) (printf "~a " (integer->formatted-hex x 2))) b))
+  (define (display-bytes-as-char b)
+    (for-each (lambda (x) (if (or (< x 32) (> x 126))
+                              (printf ".")
+                              (printf "~c" (integer->char x))))
+              b))
+  (define (display-bytes address)
+    (let ((bytes-buffer (peek-bytes 16 address in-port)))
+      (if (eof-object? bytes-buffer)
+          (begin
+            (display "* End of file *")
+            (newline))          
+          (begin
+            (let ((byte-lst (bytes->list bytes-buffer)))
+              (display-address address)
+              (display-bytes-as-hex byte-lst)
+              (display-bytes-as-char byte-lst)
+              (newline)
+              (display-bytes (+ address 16)))))))
+  (display-bytes 0))
+
+(if (= (vector-length (current-command-line-arguments)) 1)
+    (let ((file-name (vector-ref (current-command-line-arguments) 0)))      
+      (if (file-exists? file-name)
+          (display-bin (open-input-file file-name))
+          (printf "File: ~a not found" file-name)))
+    (display-usage))
